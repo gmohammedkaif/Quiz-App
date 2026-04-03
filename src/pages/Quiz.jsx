@@ -1,10 +1,18 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useRef } from "react";
 
 const Quiz = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
+  /*newly added */
+  const amount = state?.questions || 10;
+const category = state?.category || 9;
+const difficulty = state?.difficulty || "medium";
+const hasFetched = useRef(false);
+
+
 
   const [questions, setQuestions] = useState([]);
   const [current, setCurrent] = useState(0);
@@ -14,19 +22,24 @@ const Quiz = () => {
   const [answers, setAnswers] = useState([]);
 
   // FETCH
-  useEffect(() => {
-    axios
-      .get(
-        `https://opentdb.com/api.php?amount=${state.questions}&category=${state.category}&difficulty=${state.difficulty}&type=multiple`
-      )
-      .then((res) => {
-        const formatted = res.data.results.map((q) => ({
-          ...q,
-          answers: shuffle([...q.incorrect_answers, q.correct_answer]),
-        }));
-        setQuestions(formatted);
-      });
-  }, []);
+useEffect(() => {
+  if (hasFetched.current) return;
+  hasFetched.current = true;
+
+  axios
+    .get(
+      `https://opentdb.com/api.php?amount=${amount}&category=${category}&difficulty=${difficulty}&type=multiple`
+    )
+    .then((res) => {
+      const formatted = res.data.results.map((q) => ({
+        ...q,
+        answers: shuffle([...q.incorrect_answers, q.correct_answer]),
+      }));
+      setQuestions(formatted);
+    })
+    .catch((err) => console.error(err));
+}, []);
+
 
   const shuffle = (arr) => arr.sort(() => Math.random() - 0.5);
 
@@ -46,32 +59,36 @@ const Quiz = () => {
   };
 
   const handleNext = () => {
-    const correct = questions[current].correct_answer;
+  const correct = questions[current].correct_answer;
 
-    if (selected === correct) {
-      setScore((prev) => prev + 1);
-    }
+  let updatedScore = score;
 
-    setAnswers([
-      ...answers,
-      {
-        question: questions[current].question,
-        correct,
-        selected,
-      },
-    ]);
+  if (selected === correct) {
+    updatedScore = score + 1;
+    setScore(updatedScore);
+  }
 
-    setSelected(null);
-    setTimer(15);
+  const updatedAnswers = [
+    ...answers,
+    {
+      question: questions[current].question,
+      correct,
+      selected,
+    },
+  ];
 
-    if (current + 1 < questions.length) {
-      setCurrent(current + 1);
-    } else {
-      navigate("/result", {
-        state: { score, total: questions.length, answers },
-      });
-    }
-  };
+  setAnswers(updatedAnswers);
+  setSelected(null);
+  setTimer(15);
+
+  if (current + 1 < questions.length) {
+    setCurrent(current + 1);
+  } else {
+    navigate("/result", {
+      state: { score: updatedScore, total: questions.length, answers: updatedAnswers },
+    });
+  }
+};
 
   if (!questions.length) return <h2 className="quiz-loading">Loading...</h2>;
 
