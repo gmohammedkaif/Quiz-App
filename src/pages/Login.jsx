@@ -9,6 +9,8 @@ import { auth, googleProvider } from "../services/firebase";
 import { signOut } from "firebase/auth";
 // import {  PiEyeThin,  PiEyeSlashThin  } from "react-icons/pi";
 import { GoEye, GoEyeClosed } from "react-icons/go";
+import { useDispatch } from "react-redux";
+import { setUser } from "../features/userSlice";
 
 
 const Login = () => {
@@ -19,12 +21,14 @@ const Login = () => {
   const [signupPassword, setSignupPassword] = useState("");
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [showSignupPassword, setShowSignupPassword] = useState(false);
+  const dispatch = useDispatch();
 
   const navigate = useNavigate();
   /* google login */
   const handleGoogleLogin = async () => {
     try {
-      await signInWithPopup(auth, googleProvider);
+     const result= await signInWithPopup(auth, googleProvider);
+      const user = result.user;
       navigate("/dashboard");
     } catch (err) {
       if (err.code === "auth/email-already-in-use") {
@@ -63,7 +67,9 @@ const Login = () => {
       return;
     }
     try {
-      await signInWithEmailAndPassword(auth, loginEmail, loginPassword);
+        const userCredential = await signInWithEmailAndPassword(auth, loginEmail, loginPassword);
+        const user = userCredential.user;
+       dispatch(setUser(user.email));
       navigate("/dashboard");
     } catch (err) {
       alert(err.message);
@@ -182,7 +188,7 @@ const Login = () => {
                   className="eye-icon"
                   onClick={() => setShowSignupPassword(!showSignupPassword)}
                 >
-                  {showLoginPassword ? <GoEyeClosed /> : <GoEye />}
+                  {showSignupPassword ? <GoEyeClosed /> : <GoEye />}
                 </span>
               </div>
 

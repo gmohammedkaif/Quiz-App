@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 import { MdOutlineSportsSoccer } from "react-icons/md";
 import { BsTerminal } from "react-icons/bs";
@@ -10,6 +11,8 @@ import { FaHistory } from "react-icons/fa";
 
 const Dashboard = () => {
   const navigate = useNavigate();
+const email = useSelector((state) => state.user?.email);
+  console.log(email);
 
   // ✅ STATE
   const [selectedCategory, setSelectedCategory] = useState(null);

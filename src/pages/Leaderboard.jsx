@@ -1,7 +1,37 @@
-import React from "react";
+import React, { useState } from "react";
+import { useSelector } from "react-redux";
 // import "./index.css";
 
 const Leaderboard = () => {
+  const users = useSelector((state) => state.leaderboard.users);
+
+  const [level, setLevel] = useState("All");
+  const [search, setSearch] = useState("");
+
+  // 🎯 FILTER BY DIFFICULTY
+  let filteredUsers =
+    level === "All"
+      ? users
+      : users.filter((u) => u.difficulty === level.toLowerCase());
+
+  // 🔍 SEARCH FILTER
+  filteredUsers = filteredUsers.filter((u) =>
+  u.email && u.email.toLowerCase().includes(search.toLowerCase())
+);
+
+  // 📊 SORT BY SCORE
+  const sortedUsers = [...filteredUsers].sort((a, b) => b.score - a.score);
+
+  // 🏆 TOP 3
+  const top3 = sortedUsers.slice(0, 3);
+
+  // 📋 REST USERS
+  const others = sortedUsers.slice(3);
+
+  // 🎨 RANDOM IMAGE
+  const getAvatar = (email) =>
+    `https://api.dicebear.com/7.x/initials/svg?seed=${email}`;
+
   return (
     <>
       {/* NAVBAR */}
@@ -26,7 +56,6 @@ const Leaderboard = () => {
 
       {/* MAIN */}
       <main className="leaderboard-main">
-
         {/* HERO */}
         <div className="leaderboard-hero">
           <span className="leaderboard-tag">HALL OF FAME</span>
@@ -40,51 +69,80 @@ const Leaderboard = () => {
         {/* FILTER */}
         <div className="leaderboard-filter">
           <div className="leaderboard-levels">
-            <button className="leaderboard-active">All Levels</button>
-            <button>Easy</button>
-            <button>Medium</button>
-            <button>Hard</button>
+            <button
+              className={level === "All" ? "leaderboard-active" : ""}
+              onClick={() => setLevel("All")}
+            >
+              All Levels
+            </button>
+
+            <button
+              onClick={() => setLevel("easy")}
+              className={level === "easy" ? "leaderboard-active" : ""}
+            >
+              Easy
+            </button>
+
+            <button
+              onClick={() => setLevel("medium")}
+              className={level === "medium" ? "leaderboard-active" : ""}
+            >
+              Medium
+            </button>
+
+            <button
+              onClick={() => setLevel("hard")}
+              className={level === "hard" ? "leaderboard-active" : ""}
+            >
+              Hard
+            </button>
           </div>
 
-          <input placeholder="Find a master..." />
+          <input
+            placeholder="Find a master..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
         </div>
 
         {/* TOP 3 */}
         <div className="leaderboard-top3">
+          {top3.map((user, index) => (
+            <div
+              key={index}
+              className={`leaderboard-card ${
+                index === 1 ? "leaderboard-big" : ""
+              }`}
+            >
+              <img src={getAvatar(user.email)} alt="" />
+              <h3>{user.email.split("@")[0]}</h3>
+              <p>{user.email}</p>
 
-          {/* 2 */}
-          <div className="leaderboard-card">
-            <img src="https://i.pravatar.cc/100?img=1" alt="" />
-            <h3>Alex Rivera</h3>
-            <p>alex.riv@gmail.com</p>
-            <div className="leaderboard-score">14,820</div>
-            <span className="leaderboard-rank">2</span>
-          </div>
-
-          {/* 1 */}
-          <div className="leaderboard-card leaderboard-big">
-            <img src="https://i.pravatar.cc/100?img=2" alt="" />
-            <h3>Sarah Jenkins</h3>
-            <p>s.jenkins@academy.edu</p>
-
-            <div className="leaderboard-score-box">
-              <span className="leaderboard-score">15,400</span>
-              <small>Total Points</small>
+              {index === 1 ? (
+                <>
+                  <div className="leaderboard-score-box">
+                    <span className="leaderboard-score">
+                      {user.score * 100}
+                    </span>
+                    <small>Total Points</small>
+                  </div>
+                  <span className="leaderboard-badge">Grand Master</span>
+                  <span className="leaderboard-rank leaderboard-one">
+                    1
+                  </span>
+                </>
+              ) : (
+                <>
+                  <div className="leaderboard-score">
+                    {user.score * 100}
+                  </div>
+                  <span className="leaderboard-rank">
+                    {index === 0 ? 2 : 3}
+                  </span>
+                </>
+              )}
             </div>
-
-            <span className="leaderboard-badge">Grand Master</span>
-            <span className="leaderboard-rank leaderboard-one">1</span>
-          </div>
-
-          {/* 3 */}
-          <div className="leaderboard-card">
-            <img src="https://i.pravatar.cc/100?img=3" alt="" />
-            <h3>Marcus Thorne</h3>
-            <p>m.thorne@tech.io</p>
-            <div className="leaderboard-score">13,950</div>
-            <span className="leaderboard-rank">3</span>
-          </div>
-
+          ))}
         </div>
 
         {/* TABLE */}
@@ -101,33 +159,22 @@ const Leaderboard = () => {
             </thead>
 
             <tbody>
-              <tr>
-                <td>#4</td>
-                <td>Elena Lupo</td>
-                <td>Quantum Physics</td>
-                <td className="leaderboard-hard">Hard</td>
-                <td>12,400</td>
-              </tr>
-
-              <tr>
-                <td>#5</td>
-                <td>David Kim</td>
-                <td>World History</td>
-                <td className="leaderboard-medium">Medium</td>
-                <td>11,900</td>
-              </tr>
-
-              <tr>
-                <td>#6</td>
-                <td>Maya Singh</td>
-                <td>Art</td>
-                <td className="leaderboard-easy">Easy</td>
-                <td>10,250</td>
-              </tr>
+              {others.map((user, index) => (
+                <tr key={index}>
+                  <td>#{index + 4}</td>
+                  <td>{user.email}</td>
+                  <td>{user.category || "General"}</td>
+                  <td
+                    className={`leaderboard-${user.difficulty}`}
+                  >
+                    {user.difficulty}
+                  </td>
+                  <td>{user.score * 100}</td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
-
       </main>
     </>
   );

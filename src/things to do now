@@ -1,0 +1,7 @@
+complete my project flow .......
+first in login if an user click continue with login his email will be stored in firebase and in redux also ..
+and after that he will be redirected to dashboard page on nav top right user mail will be displayed and below his mail a log out button will have to show
+in dashboard he will select cateogry of quiz and difficulty of quiz and number of questions that he wants with all those shall be moved to quiz page 
+in quiz page question will be started to display with an timer of 15 seconds or 30 seconds after all the questions get submitted
+in result page it will show how many he would have taken and list all the questions correcly with an right answer and wrong answer..... this also be stored in redux 
+and after all leaderboard in show which user have scored highest marks have to show in leaderboard 
