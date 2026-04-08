@@ -1,28 +1,71 @@
-import React from "react";
-import Login from './pages/Login'
+import React, { useEffect } from "react";
+import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Quiz from "./pages/Quiz";
 import Result from "./pages/Result";
 import Leaderboard from "./pages/Leaderboard";
-import {BrowserRouter, Route, Routes} from "react-router-dom"
 
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { setUser } from "./features/userSlice";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const App = () => {
-  
-  return <div>
-  <BrowserRouter>
-  <Routes>
-    <Route path="/" element={<Login />}/>
-    <Route path="/dashboard" element={<Dashboard />} />
-    <Route path="/quiz" element={<Quiz />} />
-    <Route path="/result" element={<Result />} />
-    <Route path="/leaderboard" element={<Leaderboard />} />
+  const dispatch = useDispatch();
 
-  </Routes>
-  </BrowserRouter>
+  useEffect(() => {
+    const savedEmail = localStorage.getItem("userEmail");
 
+    if (savedEmail) {
+      dispatch(setUser(savedEmail));
+    }
+  }, [dispatch]);
 
-    </div>;
+  return (
+    <BrowserRouter>
+      <Routes>
+
+        <Route path="/" element={<Login />} />
+
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/leaderboard"
+          element={
+            <ProtectedRoute>
+              <Leaderboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/quiz"
+          element={
+            <ProtectedRoute>
+              <Quiz />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/result"
+          element={
+            <ProtectedRoute>
+              <Result />
+            </ProtectedRoute>
+          }
+        />
+
+      </Routes>
+    </BrowserRouter>
+  );
 };
 
 export default App;

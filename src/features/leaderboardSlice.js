@@ -1,13 +1,32 @@
 import { createSlice } from "@reduxjs/toolkit";
 
+
+const loadFromLocalStorage = () => {
+  try {
+    const data = localStorage.getItem("leaderboard");
+    return data ? JSON.parse(data) : [];
+  } catch {
+    return [];
+  }
+};
+
+const saveToLocalStorage = (users) => {
+  localStorage.setItem("leaderboard", JSON.stringify(users));
+};
+
 const leaderboardSlice = createSlice({
   name: "leaderboard",
   initialState: {
-    users: [],
+    users: loadFromLocalStorage(), 
   },
+
   reducers: {
     addUserScore: (state, action) => {
-      state.users.push(action.payload);
+      const newUser = action.payload;
+
+      state.users.push(newUser);
+
+      saveToLocalStorage(state.users);
     },
   },
 });

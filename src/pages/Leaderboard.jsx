@@ -1,62 +1,63 @@
-import React, { useState } from "react";
 import { useSelector } from "react-redux";
-// import "./index.css";
+import { useEffect, useState } from "react";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../services/firebase";
+import Navbar from "../components/Navbar";
 
 const Leaderboard = () => {
-  const users = useSelector((state) => state.leaderboard.users);
+  const categoryMap = {
+    9: "General",
+    21: "Sports",
+    23: "History",
+    17: "Science",
+    18: "Tech",
+  };
+  const [users, setUsers] = useState([]);
 
   const [level, setLevel] = useState("All");
   const [search, setSearch] = useState("");
 
-  // 🎯 FILTER BY DIFFICULTY
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const snapshot = await getDocs(collection(db, "leaderboard"));
+        const data = snapshot.docs.map((doc) => doc.data());
+        setUsers(data);
+      } catch (err) {
+        console.error("Error fetching leaderboard:", err);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
   let filteredUsers =
     level === "All"
       ? users
       : users.filter((u) => u.difficulty === level.toLowerCase());
 
-  // 🔍 SEARCH FILTER
-  filteredUsers = filteredUsers.filter((u) =>
-  u.email && u.email.toLowerCase().includes(search.toLowerCase())
-);
+  filteredUsers = filteredUsers.filter((u) => u.score > 0);
 
-  // 📊 SORT BY SCORE
-  const sortedUsers = [...filteredUsers].sort((a, b) => b.score - a.score);
+  filteredUsers = filteredUsers.filter(
+    (u) => u.email && u.email.toLowerCase().includes(search.toLowerCase()),
+  );
 
-  // 🏆 TOP 3
+  const sortedUsers = [...filteredUsers]
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 10);
+
   const top3 = sortedUsers.slice(0, 3);
 
-  // 📋 REST USERS
   const others = sortedUsers.slice(3);
 
-  // 🎨 RANDOM IMAGE
   const getAvatar = (email) =>
     `https://api.dicebear.com/7.x/initials/svg?seed=${email}`;
 
   return (
     <>
-      {/* NAVBAR */}
-      <nav className="leaderboard-navbar">
-        <div className="leaderboard-nav-container">
-          <div className="leaderboard-nav-left">
-            <h2 className="leaderboard-logo">Quiz Master</h2>
+      <Navbar />
 
-            <div className="leaderboard-nav-links">
-              <span>Dashboard</span>
-              <span className="leaderboard-active">Leaderboard</span>
-              <span>Categories</span>
-            </div>
-          </div>
-
-          <div className="leaderboard-nav-right">
-            <button className="leaderboard-profile-btn">Profile</button>
-            <button className="leaderboard-logout-btn">Logout</button>
-          </div>
-        </div>
-      </nav>
-
-      {/* MAIN */}
       <main className="leaderboard-main">
-        {/* HERO */}
         <div className="leaderboard-hero">
           <span className="leaderboard-tag">HALL OF FAME</span>
           <h1>Top Intellectuals</h1>
@@ -66,7 +67,6 @@ const Leaderboard = () => {
           </p>
         </div>
 
-        {/* FILTER */}
         <div className="leaderboard-filter">
           <div className="leaderboard-levels">
             <button
@@ -105,7 +105,6 @@ const Leaderboard = () => {
           />
         </div>
 
-        {/* TOP 3 */}
         <div className="leaderboard-top3">
           {top3.map((user, index) => (
             <div
@@ -118,34 +117,26 @@ const Leaderboard = () => {
               <h3>{user.email.split("@")[0]}</h3>
               <p>{user.email}</p>
 
-              {index === 1 ? (
+              {index === 0 ? (
                 <>
                   <div className="leaderboard-score-box">
-                    <span className="leaderboard-score">
-                      {user.score * 100}
-                    </span>
+                    <span className="leaderboard-score">{user.score}</span>
                     <small>Total Points</small>
                   </div>
-                  <span className="leaderboard-badge">Grand Master</span>
-                  <span className="leaderboard-rank leaderboard-one">
-                    1
-                  </span>
+                  <span className="leaderboard-badge">{user.difficulty}</span>
+                  <span className="leaderboard-rank leaderboard-one">1</span>
                 </>
               ) : (
                 <>
-                  <div className="leaderboard-score">
-                    {user.score * 100}
-                  </div>
-                  <span className="leaderboard-rank">
-                    {index === 0 ? 2 : 3}
-                  </span>
+                  <div className="leaderboard-score">{user.score}</div>
+                  <small>{user.difficulty}</small>
+                  <span className="leaderboard-rank">{index + 1}</span>
                 </>
               )}
             </div>
           ))}
         </div>
 
-        {/* TABLE */}
         <div className="leaderboard-table">
           <table>
             <thead>
@@ -163,13 +154,11 @@ const Leaderboard = () => {
                 <tr key={index}>
                   <td>#{index + 4}</td>
                   <td>{user.email}</td>
-                  <td>{user.category || "General"}</td>
-                  <td
-                    className={`leaderboard-${user.difficulty}`}
-                  >
+                  <td>{categoryMap[user.category] || "General"}</td>
+                  <td className={`leaderboard-${user.difficulty}`}>
                     {user.difficulty}
                   </td>
-                  <td>{user.score * 100}</td>
+                  <td>{user.score}</td>
                 </tr>
               ))}
             </tbody>

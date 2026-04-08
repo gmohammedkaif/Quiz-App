@@ -1,25 +1,55 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 
-import { MdOutlineSportsSoccer } from "react-icons/md";
+import { MdOutlineSportsSoccer, MdLogout } from "react-icons/md";
 import { BsTerminal } from "react-icons/bs";
 import { MdOutlinePsychology } from "react-icons/md";
 import { RiGovernmentLine } from "react-icons/ri";
 import { BiMoviePlay } from "react-icons/bi";
 import { FaHistory } from "react-icons/fa";
+import Navbar from "../components/Navbar";
+import { setUser } from "../features/userSlice";
 
 const Dashboard = () => {
+  const categoryMap = {
+  9: "General Knowledge",
+  21: "Sports",
+  23: "History",
+  17: "Science",
+  18: "Technology",
+  24: "Politics",
+  11: "Entertainment",
+  22: "Geography",
+};
   const navigate = useNavigate();
-const email = useSelector((state) => state.user?.email);
-  console.log(email);
+  const dispatch = useDispatch();
 
-  // ✅ STATE
+  const email = useSelector((state) => state.user?.email);
+
   const [selectedCategory, setSelectedCategory] = useState(null);
-  const [difficulty, setDifficulty] = useState("medium");
+  const [difficulty, setDifficulty] = useState("");
   const [questionsCount, setQuestionsCount] = useState(10);
 
-  // ✅ CATEGORY DATA (WITH API IDS)
+  const [lastScore, setLastScore] = useState(null);
+  const [lastCategory, setLastCategory] = useState("");
+
+
+  useEffect(() => {
+    const data = JSON.parse(localStorage.getItem("lastQuiz"));
+    if (data) {
+      setLastScore(data.score);
+      setLastCategory(categoryMap[data.category] || "General");
+    }
+  }, []);
+  useEffect(() => {
+  const savedEmail = localStorage.getItem("userEmail");
+
+  if (savedEmail) {
+    dispatch(setUser(savedEmail));  
+  }
+}, [dispatch]);
+
   const categories = [
     { id: 21, name: "Sports", icon: <MdOutlineSportsSoccer />, desc: "Athletics, tournaments, and legendary players." },
     { id: 18, name: "Technology", icon: <BsTerminal />, desc: "Future tech, history of computing and digital trends" },
@@ -29,10 +59,15 @@ const email = useSelector((state) => state.user?.email);
     { id: 22, name: "Geography", icon: <FaHistory />, desc: "Explore the world and its wonders." },
   ];
 
-  // ✅ START QUIZ
+
   const handleStartQuiz = () => {
     if (!selectedCategory) {
       alert("Please select a category");
+      return;
+    }
+
+    if (!difficulty) {
+      alert("Please select difficulty level");
       return;
     }
 
@@ -42,44 +77,29 @@ const email = useSelector((state) => state.user?.email);
         difficulty,
         questionsCount,
       },
+      replace: true,
     });
+  };
+
+  
+  const handleLogout = () => {
+    dispatch(logout());
+  localStorage.removeItem("userEmail"); 
+    navigate("/");
   };
 
   return (
     <div className="dashboard-container">
-      {/* NAVBAR */}
-      <nav className="dashboard-navbar">
-        <div className="dashboard-nav-left">
-          <span className="dashboard-logo">Quiz Master</span>
+     
+     <Navbar />
 
-          <div className="dashboard-nav-links">
-            <a className="dashboard-active">Dashboard</a>
-            <a>Leaderboard</a>
-            <a>Categories</a>
-          </div>
-        </div>
-
-        <div className="dashboard-nav-right">
-          <div className="dashboard-user-info">
-            <span>lucid.user@intellectual.com</span>
-            <small>Premium Member</small>
-          </div>
-
-          <img
-            src="https://i.pravatar.cc/100"
-            alt="avatar"
-            className="dashboard-avatar"
-          />
-        </div>
-      </nav>
-
-      {/* MAIN */}
+  
       <main className="dashboard-main">
-        {/* HERO */}
+        
         <div className="dashboard-hero">
           <h1>
             Welcome back, <br />
-            <span>Master of Inquiry.</span>
+            <span>{email?.split("@")[0] || "Player"}.</span>
           </h1>
           <p>
             Unlock new cognitive heights. Select a category below to challenge
@@ -87,9 +107,9 @@ const email = useSelector((state) => state.user?.email);
           </p>
         </div>
 
-        {/* GRID */}
+    
         <div className="dashboard-grid">
-          {/* LEFT */}
+       
           <div className="dashboard-left-section">
             <div className="dashboard-section-header">
               <h2>Start a Quiz</h2>
@@ -113,12 +133,10 @@ const email = useSelector((state) => state.user?.email);
             </div>
           </div>
 
-          {/* RIGHT */}
           <div className="dashboard-right-section">
             <div className="dashboard-settings">
               <h2>Quiz Settings</h2>
 
-              {/* DIFFICULTY */}
               <div className="dashboard-difficulty">
                 <p>Difficulty</p>
                 <div className="dashboard-btn-group">
@@ -128,13 +146,13 @@ const email = useSelector((state) => state.user?.email);
                       className={difficulty === level ? "dashboard-active" : ""}
                       onClick={() => setDifficulty(level)}
                     >
-                      {level.charAt(0).toUpperCase() + level.slice(1)}
+                      {level.toUpperCase()}
                     </button>
                   ))}
                 </div>
               </div>
 
-              {/* RANGE */}
+             
               <div className="dashboard-range">
                 <p>Questions: {questionsCount}</p>
                 <input
@@ -142,11 +160,11 @@ const email = useSelector((state) => state.user?.email);
                   min="5"
                   max="25"
                   value={questionsCount}
-                 onChange={(e) => setQuestionsCount(Number(e.target.value))}
+                  onChange={(e) => setQuestionsCount(Number(e.target.value))}
                 />
               </div>
 
-              {/* START */}
+            
               <button
                 className="dashboard-start-btn"
                 onClick={handleStartQuiz}
@@ -155,11 +173,15 @@ const email = useSelector((state) => state.user?.email);
               </button>
             </div>
 
-            {/* STATS */}
+          
             <div className="dashboard-stats">
               <h3>Last Performance</h3>
-              <h1>88%</h1>
-              <p>Correct in General Science</p>
+              <h1>{lastScore !== null ? `${lastScore}%` : "--"}</h1>
+              <p>
+                {lastCategory
+                  ? `Correct in ${lastCategory}`
+                  : "No quiz attempted yet"}
+              </p>
             </div>
           </div>
         </div>

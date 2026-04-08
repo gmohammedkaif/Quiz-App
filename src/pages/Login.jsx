@@ -29,6 +29,9 @@ const Login = () => {
     try {
      const result= await signInWithPopup(auth, googleProvider);
       const user = result.user;
+       dispatch(setUser(user.email));
+       localStorage.setItem("userEmail", user.email);
+
       navigate("/dashboard");
     } catch (err) {
       if (err.code === "auth/email-already-in-use") {
@@ -51,7 +54,6 @@ const Login = () => {
       await signOut(auth);
       alert("Signup successful! Please login now.");
 
-      // clear fields
       setSignupEmail("");
       setSignupPassword("");
     } catch (err) {
@@ -70,6 +72,7 @@ const Login = () => {
         const userCredential = await signInWithEmailAndPassword(auth, loginEmail, loginPassword);
         const user = userCredential.user;
        dispatch(setUser(user.email));
+       localStorage.setItem("userEmail", user.email);
       navigate("/dashboard");
     } catch (err) {
       alert(err.message);
@@ -79,7 +82,7 @@ const Login = () => {
   return (
     <div className="login-container">
       <div className="login-card">
-        {/* LEFT SIDE - LOGIN */}
+       
         <div className="login-left">
           <div className="login-brand">Quiz Master</div>
 
@@ -144,13 +147,9 @@ const Login = () => {
               Log In to Dashboard
             </button>
           </form>
-
-          {/* <p className="login-signup-text">
-            Don’t have an account? <span>Create one now</span>
-          </p> */}
         </div>
 
-        {/* RIGHT SIDE - SIGNUP */}
+      
         <div className="login-right">
           <div className="login-overlay">
             <h2>Create Account</h2>
@@ -167,7 +166,6 @@ const Login = () => {
                 name="fakepass"
                 style={{ display: "none" }}
               />
-              <input autoComplete="name" type="text" placeholder="Full Name" />
               <input
                 autoComplete="new-email"
                 type="email"
