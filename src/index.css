@@ -17,7 +17,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
+  height: 100vh;
   align-items: flex-start;
   padding: 20px;
 }
@@ -133,10 +133,15 @@ body {
 
 .login-right {
   flex: 1;
-  background-image: url(right-bg.png);
+  /* background-image: url('/right-bg.png');
+    background-size: cover;       /* 🔥 important */
+  /* background-position: center;  */
   display: flex;
   justify-content: center;
   align-items: center;
+   /* height: 100%;   */
+   /* min-height: 100vh; */
+  width: 100%;
 }
 
 .login-overlay {
@@ -532,8 +537,7 @@ body {
 /* leaderboard */
 /* leaderboard */
 
-@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Inter:wght@400;500;600&display=swap");
-
+/* @import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Inter:wght@400;500;600&display=swap"); */
 
 .leaderboard-navbar {
   position: sticky;

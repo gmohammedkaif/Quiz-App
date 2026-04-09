@@ -11,6 +11,7 @@ import { signOut } from "firebase/auth";
 import { GoEye, GoEyeClosed } from "react-icons/go";
 import { useDispatch } from "react-redux";
 import { setUser } from "../features/userSlice";
+import bgImage from "../assets/right-bg.png";
 
 
 const Login = () => {
@@ -150,7 +151,11 @@ const Login = () => {
         </div>
 
       
-        <div className="login-right">
+        <div className="login-right" style={{
+    backgroundImage: `url(${bgImage})`,
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+  }}>
           <div className="login-overlay">
             <h2>Create Account</h2>
             <p>Join our community of intellectuals and track your progress.</p>
