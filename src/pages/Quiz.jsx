@@ -40,22 +40,42 @@ const Quiz = () => {
   const shuffle = (arr) => arr.sort(() => Math.random() - 0.5);
 
   useEffect(() => {
-    if (hasFetched.current) return;
-    hasFetched.current = true;
+  const storageKey = `quiz_${amount}_${category}_${difficulty}`;
+  const saved = localStorage.getItem(storageKey);
 
-    axios
-      .get(
-        `https://opentdb.com/api.php?amount=${amount}&category=${category}&difficulty=${difficulty}&type=multiple`,
-      )
-      .then((res) => {
-        const formatted = res.data.results.map((q) => ({
-          ...q,
-          answers: shuffle([...q.incorrect_answers, q.correct_answer]),
-        }));
-        setQuestions(formatted);
-      })
-      .catch((err) => console.error(err));
-  }, []);
+  if (saved) {
+    setQuestions(JSON.parse(saved));
+    return;
+  }
+
+  const fetchQuestions = async () => {
+    try {
+      const res = await axios.get(
+        `https://opentdb.com/api.php?amount=${amount}&category=${category}&difficulty=${difficulty}&type=multiple`
+      );
+
+      const formatted = res.data.results.map((q) => ({
+        ...q,
+        answers: shuffle([...q.incorrect_answers, q.correct_answer]),
+      }));
+
+      setQuestions(formatted);
+
+      // 🔥 SAVE TO LOCAL STORAGE
+      localStorage.setItem(storageKey, JSON.stringify(formatted));
+
+    } catch (err) {
+      if (err.response?.status === 429) {
+        alert("Too many requests 😅 Please wait a few seconds and try again.");
+      } else {
+        alert("Failed to load quiz.");
+      }
+      console.error(err);
+    }
+  };
+
+  fetchQuestions();
+}, [amount, category, difficulty]);
   useEffect(() => {
     if (timer === 0) {
       setTimeout(() => {

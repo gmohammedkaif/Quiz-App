@@ -10,6 +10,7 @@ import { BiMoviePlay } from "react-icons/bi";
 import { FaHistory } from "react-icons/fa";
 import Navbar from "../components/Navbar";
 import { setUser } from "../features/userSlice";
+import { logout } from "../features/userSlice";
 
 const Dashboard = () => {
   const categoryMap = {
